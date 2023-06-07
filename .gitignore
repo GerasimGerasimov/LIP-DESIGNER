@@ -3,6 +3,8 @@
 # dependencies
 **/node_modules
 lip-designer/build
+lip-designer/cpp/build
+lip-designer/cpp/public
 /.pnp
 .pnp.js
 
