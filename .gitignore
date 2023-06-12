@@ -5,8 +5,7 @@
 lip-designer/build
 lip-designer/cpp/build
 lip-designer/cpp/public
-/.pnp
-.pnp.js
+package-lock.json
 
 # testing
 /coverage

@@ -1,3 +1,7 @@
+/*
+https://robkendal.co.uk/blog/how-to-fix-property-does-not-exist-on-window-type-in-typescript
+побеждал 'PROPERTY SERIAL DOES NOT EXIST ON TYPE NAVIGATOR IN TYPESCRIPT' ERROR
+*/
 import React, { Component } from "react";
 //import Module from "../../hello_world.wasm.js";
 //import func from "../../../cpp/public/hello_world.wasm.js";
@@ -48,7 +52,19 @@ export default class MainPage extends Component<IMainProps, IMainState> {
   }
 
   onClickHandler() {
+    this.getSerialPort();
     this.setState({Counter: this.increaseCounter(this.state.Counter)})
+  }
+
+  async getSerialPort() {
+    try {
+      const port:any = await navigator.serial.requestPort();
+      console.log(port);
+      // Continue connecting to the device attached to |port|.
+    } catch (e) {
+      console.log(e);
+      // The prompt has been dismissed without selecting a device.
+    }
   }
 
   render(){
