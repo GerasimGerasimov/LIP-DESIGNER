@@ -58,9 +58,10 @@ export default class MainPage extends Component<IMainProps, IMainState> {
 
   async getSerialPort() {
     try {
-      const port:any = await navigator.serial.requestPort();
-      console.log(port);
+      const port:any = await navigator.serial.requestPort({ filters: []});
+      console.log(port.getInfo());
       // Continue connecting to the device attached to |port|.
+
     } catch (e) {
       console.log(e);
       // The prompt has been dismissed without selecting a device.
@@ -70,10 +71,34 @@ export default class MainPage extends Component<IMainProps, IMainState> {
   render(){
     return (
       <>
-      <span>{this.state.Counter}</span>
-      <button
-        className="btn btn-secondary btn-xs"
-        onClick = {()=>this.onClickHandler()}>Click Me</button>
+        <span>{this.state.Counter}</span>
+        <button
+          className="btn btn-secondary btn-xs"
+          onClick = {()=>this.onClickHandler()}>Select COM</button>
+        <p>bps:
+          <select>
+              <option >230400</option>
+              <option selected>115200</option>
+              <option>57600</option>
+              <option>38400</option>
+              <option>19200</option>
+            </select>
+        </p>
+        <p>parity:
+          <select>
+            <option selected>none</option>
+            <option>even</option>
+            <option>odd</option>
+          </select>
+        </p>
+        <p>stop bits:
+          <select>
+            <option selected>1</option>
+            <option>1.5</option>
+            <option>2</option>
+          </select>
+        </p>
+
       </>
     );
   }
