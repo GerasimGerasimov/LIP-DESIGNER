@@ -21,7 +21,7 @@ interface IMainState{
 
 export default class MainPage extends Component<IMainProps, IMainState> {
   private add: any = undefined;
-  private COM: any = undefined;
+  private COM: SerialPort | undefined = undefined;
 
   constructor (props: IMainProps) {
     super(props);
@@ -78,7 +78,7 @@ export default class MainPage extends Component<IMainProps, IMainState> {
     }
   }
 
-  onClickApplyComSettingHandler() {
+  async onClickApplyComSettingHandler() {
     if (this.COM) {
       console.log(this.COM);
       let opt: SerialOptions = {
@@ -89,6 +89,13 @@ export default class MainPage extends Component<IMainProps, IMainState> {
         bufferSize: 256
       };
       console.log(opt);
+      try {
+        await this.COM.open(opt);
+        console.log(this.COM);
+
+      } catch(e) {
+        console.log(e);
+      }
     }
   }
 
