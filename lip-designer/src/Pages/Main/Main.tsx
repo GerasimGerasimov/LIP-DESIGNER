@@ -68,6 +68,7 @@ export default class MainPage extends Component<IMainProps, IMainState> {
 
   async getSerialPort() {
     try {
+      navigator.serial.addEventListener('connect', (event) => {console.log(`!!! Connect: ${event}`)});
       this.COM = await navigator.serial.requestPort({ filters: []});
       // Continue connecting to the device attached to |port|.
       console.log(this.COM);
@@ -91,12 +92,26 @@ export default class MainPage extends Component<IMainProps, IMainState> {
       console.log(opt);
       try {
         await this.COM.open(opt);
+        /*TODO не сраотал ни один addEventListener('connect',... */
+        //this.COM.addEventListener('connect', (event) => {console.log(`!!! Connect: ${event}`)});
+        this.COM.onconnect = (event) => {console.log(`!!! Connect: ${event}`)};
         console.log(this.COM);
-
+        const writer: WritableStreamDefaultWriter<Uint8Array> | undefined = this.COM.writable?.getWriter();
+        let uint8Array:Uint8Array = new Uint8Array([0x01, 0x11, 192, 44]);
+        await writer?.write(uint8Array);
+        writer?.releaseLock();
       } catch(e) {
         console.log(e);
       }
     }
+  }
+
+  onConnect(event: any) {
+    //console.log(`Connect: ${event}`);
+  }
+
+  onDisconnect() {
+
   }
 
   tougleBPS (e:any) {
