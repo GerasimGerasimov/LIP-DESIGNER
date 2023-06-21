@@ -68,10 +68,9 @@ export default class MainPage extends Component<IMainProps, IMainState> {
 
   async getSerialPort() {
     try {
-      navigator.serial.addEventListener('connect', (event) => {console.log(`!!! Connect: ${event}`)});
+      //Если появляется виртуальный СОМ порт (на USB) то при втыкании USB срабатывает событие CONNECT
+      navigator.serial.addEventListener('connect', (event) => {console.log(`!!! Navigator Connect: ${event}`)});
       this.COM = await navigator.serial.requestPort({ filters: []});
-      // Continue connecting to the device attached to |port|.
-      console.log(this.COM);
     } catch (e) {
       console.log(e);
       this.COM = undefined;
@@ -92,17 +91,23 @@ export default class MainPage extends Component<IMainProps, IMainState> {
       console.log(opt);
       try {
         await this.COM.open(opt);
-        /*TODO не сраотал ни один addEventListener('connect',... */
-        //this.COM.addEventListener('connect', (event) => {console.log(`!!! Connect: ${event}`)});
-        this.COM.onconnect = (event) => {console.log(`!!! Connect: ${event}`)};
+        //Когда конкретный порт открыт (виртуальны на USB) то если вытащить разъём USB, срабатывает событие DISCONNECT
+        this.COM.ondisconnect = (event) => {this.onDisconnect(event)};
         console.log(this.COM);
-        const writer: WritableStreamDefaultWriter<Uint8Array> | undefined = this.COM.writable?.getWriter();
-        let uint8Array:Uint8Array = new Uint8Array([0x01, 0x11, 192, 44]);
-        await writer?.write(uint8Array);
-        writer?.releaseLock();
       } catch(e) {
         console.log(e);
       }
+    }
+  }
+
+  async sendCMD () {
+    try {
+      const writer: WritableStreamDefaultWriter<Uint8Array> | undefined = this.COM?.writable?.getWriter();
+      let uint8Array:Uint8Array = new Uint8Array([0x01, 0x11, 192, 44]);
+      await writer?.write(uint8Array);
+      writer?.releaseLock();
+    } catch (e) {
+
     }
   }
 
@@ -110,8 +115,8 @@ export default class MainPage extends Component<IMainProps, IMainState> {
     //console.log(`Connect: ${event}`);
   }
 
-  onDisconnect() {
-
+  onDisconnect(event: any) {
+    console.log(`COM disconnected!: ${event}`)
   }
 
   tougleBPS (e:any) {
@@ -139,7 +144,9 @@ export default class MainPage extends Component<IMainProps, IMainState> {
         <button
           className="btn btn-secondary btn-xs"
           onClick = {()=>this.onClickApplyComSettingHandler()}>Apply</button>
-
+        <button
+          className="btn btn-secondary btn-xs"
+          onClick = {()=>this.sendCMD()}>Send</button>
       </>
     );
   }
