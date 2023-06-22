@@ -100,12 +100,45 @@ export default class MainPage extends Component<IMainProps, IMainState> {
     }
   }
 
+  async readReceivedData(): Promise<Uint8Array> {
+    var values = new Uint8Array(0);
+    var tmp = new Uint8Array(0);
+    if (this.COM) {
+        const reader = this.COM.readable?.getReader();
+        try {
+          while (true) {
+            const { value, done } = await reader.read();
+            if (done) {
+              // |reader| has been canceled.
+              console.log('empty');
+              reader.releaseLock();
+              break;
+            }
+            // Do something with |value|…
+            tmp = new Uint8Array(values.byteLength + value.byteLength);
+            tmp.set(new Uint8Array(values), 0);
+            tmp.set(new Uint8Array(value), values.byteLength);
+            values = tmp;
+            //console.log(value);
+          }
+        } catch (error) {
+          // Handle |error|…
+          console.log(error);
+        } //finally {
+          reader.releaseLock();
+        //}
+    }
+    return values;
+  }
+
   async sendCMD () {
     try {
       const writer: WritableStreamDefaultWriter<Uint8Array> | undefined = this.COM?.writable?.getWriter();
       let uint8Array:Uint8Array = new Uint8Array([0x01, 0x11, 192, 44]);
       await writer?.write(uint8Array);
       writer?.releaseLock();
+      var values: Uint8Array = await this.readReceivedData();
+      console.log(values);
     } catch (e) {
 
     }
