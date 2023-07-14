@@ -50,16 +50,11 @@ export class BrowserComPort {
           console.log('value is undefined:', res);
         }
       }
-    } catch(error) {
-      console.log(error);//думает что остаются непрочитанные данные поэтому выпадает с ошибкой TypeError: Releasing Default reader
-                         //после того как я принудительно разблокирую поток reader.releaseLock();
-    }
-    finally {
+    } finally {
       reader.releaseLock();
       console.log('releaseLock:');
+      return res;
     }
-    console.log('return values:');
-    return res;
   }
 
   public async sendMessage(uint8Array:Uint8Array): Promise<Array<number>> {
@@ -70,7 +65,7 @@ export class BrowserComPort {
     writer!.releaseLock();
     this.TimeOutTimer  = setTimeout(()=>{this.onTimeOut()}, 3000);
     this.data = await this.readRespond();
-    console.log(this.data);
+    console.log('MY DATA:',this.data);
     return this.data;
   }
 
