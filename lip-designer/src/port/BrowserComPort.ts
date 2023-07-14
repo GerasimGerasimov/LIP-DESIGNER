@@ -11,8 +11,6 @@ export class BrowserComPort {
   private ChunkEndTime: number = 10;
   private TimeOutTimer: any = undefined;
   
-  private reader: any = undefined;
-  
   constructor (com: SerialPort) {
     this.com = com;
     this.onData = this.onDataDefault;
@@ -22,87 +20,55 @@ export class BrowserComPort {
     return 0;
   }
 
-  async readChunk() {
-      this.reader = this.com!.readable?.getReader();
-      const reader = this.reader;
-        try {
-          while (true) {
-            const {done, value} = await reader.read();
-            if (done) {
-              console.log('DONE',this.data);
-              //reader.releaseLock();
-              break;
-            }
-            if (value) {
-              console.log('CHUNK:', value);
-              this.data.push(...value);
-              //reader.releaseLock();
-            } else {
-              console.log('LEN=0',this.data);
-              reader.releaseLock();
-            }
-          }
-        } catch (error) {
-          console.log('ERROR:',error);
-          reader.releaseLock();
+  private onTimeOut() {
+    clearTimeout(this.TimeOutTimer);
+    console.log('time out');
+  }
+
+  private async readRespond(): Promise<Array<number>> {
+    var res: Array<number> = [];
+    const reader: any = this.com!.readable!.getReader();
+    try {
+      while (true) {
+        const {done, value} = await reader.read();
+        if (done) {
+          console.log('break');
+          break;
         }
-    }
-    /*
-      if (reader) {
-        try {
-            
-            if (value) {
-              
-              if (value.length == 0) {
-                throw new Error('empty');
-              }
-            }
-            if (done) {
-              throw new Error('empty');
-            };
-            reader.releaseLock();
-            this.ChunkEndTimer = setTimeout(() =>{this.onChunkEndTime()}, this.ChunkEndTime);
-        } catch (error) {
-          //console.log(error);
-          console.log(this.comRespondData);
+        if (value) {
+          res.push(...value);
+          console.log('chunk:',value);
+          if (this.ChunkEndTimer) clearTimeout(this.ChunkEndTimer);
+          this.ChunkEndTimer = setTimeout(async () =>{
+            if (this.TimeOutTimer) clearTimeout(this.TimeOutTimer);
+            clearTimeout(this.ChunkEndTimer);
+            console.log('--values:', res);
+            await reader.releaseLock();
+          }, 10);
+        } else {
           clearTimeout(this.ChunkEndTimer);
-          reader.releaseLock();
+          console.log('value is undefined:', res);
         }
-        //this.comRespondData = values;
-        //console.log(this.comRespondData);
-        }
-        reader.releaseLock();
       }
     }
-    */
-
-    private onTimeOut() {
-      clearTimeout(this.TimeOutTimer);
-      console.log('time out');
+    finally {
+      reader.releaseLock();
+      console.log('releaseLock:');
     }
-  
-    private onChunkEndTime() {
-      console.log('read chank time');
-      clearTimeout(this.ChunkEndTimer);
-      this.readChunk();
-    }
+    console.log('return values:');
+    return res;
+  }
 
-  public async sendMessage(uint8Array:Uint8Array) {
+  public async sendMessage(uint8Array:Uint8Array): Promise<Array<number>> {
     this.data = [];
+    console.log('--new respond--');
     const writer: WritableStreamDefaultWriter<Uint8Array> | undefined = this.com!.writable?.getWriter();
     await writer!.write(uint8Array);
     writer!.releaseLock();
     this.TimeOutTimer  = setTimeout(()=>{this.onTimeOut()}, 3000);
-    /*
-    
-    if (this.reader) this.reader.close();
-    const writer: WritableStreamDefaultWriter<Uint8Array> | undefined = this.COM?.writable?.getWriter();
-    let uint8Array:Uint8Array = new Uint8Array([0x01, 0x11, 192, 44]);
-    await writer?.write(uint8Array);
-    writer?.releaseLock();
-    //this.TimeOutTimer  = setTimeout(()=>{this.onTimeOut()}, 3000);
-    this.ChunkEndTimer = setTimeout(() =>{this.onChunkEndTime()}, 3000);
-    */
+    this.data = await this.readRespond();
+    console.log(this.data);
+    return this.data;
   }
 
   public async initialize (opt: SerialOptions) {
@@ -121,57 +87,3 @@ export class BrowserComPort {
     }
   }
 }
-
-/*
-  async _readReceivedData(): Promise<Array<number>> {
-    var values: Array<number> = [];
-    if (this.COM) {
-      const reader = this.COM.readable?.getReader();
-      if (reader) {
-        try {
-          while (true) {
-            const {done, value} = await reader.read();
-            if (done) break;
-            values.push(...value);
-            console.log(values);
-          }
-        }
-        finally {
-          reader.releaseLock();
-        }
-      }
-    }
-    return values;
-  }
-*/
-
-/*
-  async readReceivedData(): Promise<Array<number>> {
-    var values: Array<number> = [];
-    if (this.COM) {
-        const reader = this.COM.readable?.getReader();
-        if (reader) {
-          try {
-            while (true) {
-              const { value, done } = await reader.read();
-              if (done) {
-                // |reader| has been canceled.
-                console.log('empty');
-                reader.releaseLock();
-                break;
-              }
-              // Do something with |value|…
-              values.push(...value);
-              //console.log(value);
-            }
-          } catch (error) {
-            // Handle |error|…
-            console.log(error);
-          } //finally {
-            reader.releaseLock();
-          //}
-        }
-    }
-    return values;
-  }
-*/
