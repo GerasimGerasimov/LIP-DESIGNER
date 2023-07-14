@@ -31,41 +31,41 @@ export class BrowserComPort {
     try {
       while (true) {
         const {done, value} = await reader.read();
-        if (done) {
-          console.log('break');
-          break;
-        }
+        if (done) break;
         if (value) {
           res.push(...value);
-          console.log('chunk:',value);
           if (this.ChunkEndTimer) clearTimeout(this.ChunkEndTimer);
           this.ChunkEndTimer = setTimeout(async () =>{
             if (this.TimeOutTimer) clearTimeout(this.TimeOutTimer);
             clearTimeout(this.ChunkEndTimer);
-            console.log('--values:', res);
             await reader.releaseLock();
-          }, 10);
+          }, 1);
         } else {
           clearTimeout(this.ChunkEndTimer);
-          console.log('value is undefined:', res);
+          await reader.releaseLock();
         }
       }
     } finally {
-      reader.releaseLock();
-      console.log('releaseLock:');
-      return res;
+        await reader.releaseLock();
+        return res;
     }
   }
 
   public async sendMessage(uint8Array:Uint8Array): Promise<Array<number>> {
-    this.data = [];
     console.log('--new respond--');
     const writer: WritableStreamDefaultWriter<Uint8Array> | undefined = this.com!.writable?.getWriter();
     await writer!.write(uint8Array);
     writer!.releaseLock();
+    if (this.TimeOutTimer) clearTimeout(this.TimeOutTimer);
     this.TimeOutTimer  = setTimeout(()=>{this.onTimeOut()}, 3000);
     this.data = await this.readRespond();
-    console.log('MY DATA:',this.data);
+    console.log('MY DATA-ARRAY:',this.data);
+    try {
+      const s: string = String.fromCharCode(...this.data.slice(3,-2));
+      console.log('MY DATA-ASCII:', s);
+    } catch(e) {
+      console.log(e);
+    }
     return this.data;
   }
 
