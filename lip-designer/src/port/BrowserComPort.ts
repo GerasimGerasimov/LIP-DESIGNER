@@ -50,6 +50,9 @@ export class BrowserComPort {
           console.log('value is undefined:', res);
         }
       }
+    } catch(error) {
+      console.log(error);//думает что остаются непрочитанные данные поэтому выпадает с ошибкой TypeError: Releasing Default reader
+                         //после того как я принудительно разблокирую поток reader.releaseLock();
     }
     finally {
       reader.releaseLock();
