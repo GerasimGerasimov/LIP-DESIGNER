@@ -60,12 +60,6 @@ export class BrowserComPort {
     this.TimeOutTimer  = setTimeout(()=>{this.onTimeOut()}, 3000);
     this.data = await this.readRespond();
     console.log('MY DATA-ARRAY:',this.data);
-    try {
-      const s: string = String.fromCharCode(...this.data.slice(3,-2));
-      console.log('MY DATA-ASCII:', s);
-    } catch(e) {
-      console.log(e);
-    }
     return this.data;
   }
 

@@ -15,6 +15,7 @@ interface IMainState{
   baudRate: number;
   parity: ParityType;
   stopBits: number;
+  answer: string;
 }
 
 export default class MainPage extends Component<IMainProps, IMainState> {
@@ -27,7 +28,8 @@ export default class MainPage extends Component<IMainProps, IMainState> {
       Counter:0,
       baudRate: 115200,
       parity: 'none',
-      stopBits: 1
+      stopBits: 1,
+      answer:'---'
     }
   }
 
@@ -69,10 +71,13 @@ export default class MainPage extends Component<IMainProps, IMainState> {
   }
 
   async sendCMD () {
+    var res: string = '';
     try {
-      await this.browserPort!.sendMessage(new Uint8Array([0x01, 0x11, 192, 44]));
+      const answer:Array<number> = await this.browserPort!.sendMessage(new Uint8Array([0x01, 0x11, 192, 44]));
+      res = String.fromCharCode(...answer.slice(3,-2));
     } catch (e) {
     }
+    this.setState({answer: res});
   }
 
   tougleBPS (e:any) {
@@ -103,6 +108,7 @@ export default class MainPage extends Component<IMainProps, IMainState> {
         <button
           className="btn btn-secondary btn-xs"
           onClick = {()=>this.sendCMD()}>Send</button>
+        <p>{this.state.answer}</p>
       </>
     );
   }
