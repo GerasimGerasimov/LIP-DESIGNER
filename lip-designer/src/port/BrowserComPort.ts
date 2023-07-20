@@ -16,6 +16,32 @@ export class BrowserComPort {
     this.onData = this.onDataDefault;
   }
 
+
+  public async close() {
+    if (this.com) {
+      const reader = this.com!.readable!.getReader();
+      if (reader) {
+        try {
+          await reader.releaseLock();
+          await reader.cancel();
+        } catch(e) {
+          console.log(e);
+        }
+      }
+      const writer = this.com!.writable?.getWriter();
+      if (writer) await writer.close();
+      await this.com.close();
+      this.com = undefined;
+    }
+  }
+
+  private async onDisconnect(event: any){
+    console.log(event);
+    if (this.com) await this.com.close();
+    this.com = undefined;//на этом этапе, ни порта ни его потоков read/write уже не существует 
+  }
+
+
   private onDataDefault():any {
     return 0;
   }
@@ -66,6 +92,7 @@ export class BrowserComPort {
   public async initialize (opt: SerialOptions) {
     try {
       await this.com!.open(opt);
+      this.com!.ondisconnect = (event) => {this.onDisconnect(event)};
     } catch(error) {
       throw new Error('An error occurred while port initializing: '+error);
     }

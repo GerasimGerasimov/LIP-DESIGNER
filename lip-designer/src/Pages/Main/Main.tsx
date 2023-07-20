@@ -80,6 +80,13 @@ export default class MainPage extends Component<IMainProps, IMainState> {
     this.setState({answer: res});
   }
 
+  async closePort () {
+    try {
+      await this.browserPort!.close();
+    } catch (e) {
+    }
+  }
+
   tougleBPS (e:any) {
     this.setState({baudRate: parseInt(e.target.value)});
   }
@@ -109,6 +116,9 @@ export default class MainPage extends Component<IMainProps, IMainState> {
           className="btn btn-secondary btn-xs"
           onClick = {()=>this.sendCMD()}>Send</button>
         <p>{this.state.answer}</p>
+        <button
+          className="btn btn-secondary btn-xs"
+          onClick = {()=>this.closePort()}>Close Port</button>
       </>
     );
   }
