@@ -21,6 +21,7 @@ interface IMainState{
 export default class MainPage extends Component<IMainProps, IMainState> {
 
   private browserPort: BrowserComPort | void = undefined;
+  private AutoSendTimer: any = undefined;
 
   constructor (props: IMainProps) {
     super(props);
@@ -37,7 +38,7 @@ export default class MainPage extends Component<IMainProps, IMainState> {
   }
 
   increaseCounter(conter: number):number {
-    return 0;
+    return ++conter;
   }
 
   onClickHandler() {
@@ -75,9 +76,15 @@ export default class MainPage extends Component<IMainProps, IMainState> {
     try {
       const answer:Array<number> = await this.browserPort!.sendMessage(new Uint8Array([0x01, 0x11, 192, 44]));
       res = String.fromCharCode(...answer.slice(3,-2));
+      this.AutoSendTimer = setTimeout(async ()=>{await this.sendCMD()}, 1);
     } catch (e) {
+      clearTimeout(this.AutoSendTimer);
+      this.setState({Counter: 0});
     }
-    this.setState({answer: res});
+    this.setState({
+      answer: res,
+      Counter: this.increaseCounter(this.state.Counter)
+    });
   }
 
   async closePort () {
