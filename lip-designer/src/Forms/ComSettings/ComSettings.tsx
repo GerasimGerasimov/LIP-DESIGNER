@@ -23,6 +23,7 @@ export interface IComSettingsProps {
 
 export interface IComSettingsState {
   Settings: IComSettings;
+  isPortSelected: boolean;
 }
 
 export default class FilterSettings extends Component<IComSettingsProps, IComSettingsState> {
@@ -32,13 +33,11 @@ export default class FilterSettings extends Component<IComSettingsProps, IComSet
   constructor (props: IComSettingsProps) {
     super(props);
     this.state={
-      Settings: {...props.ComSettings}
+      Settings: {...props.ComSettings},
+      isPortSelected: false
     }
   }
  
-  componentDidMount(){
-  }
-
   private exitHandler() {
     let ComSettings: IComSettings = {... this.state.Settings};
     this.props.onExitHandler(this.browserPort!, ComSettings);
@@ -53,6 +52,7 @@ export default class FilterSettings extends Component<IComSettingsProps, IComSet
       console.log(e);
       this.browserPort = undefined;
     }
+    this.setState({isPortSelected:(this.browserPort === undefined)? false : true});
   }
 
   async onClickApplyComSettingHandler() {
@@ -70,29 +70,22 @@ export default class FilterSettings extends Component<IComSettingsProps, IComSet
     this.exitHandler();
   }
 
-  getSerialPortHandler() {
-    this.getSerialPort();
-  }
-
   tougleBPS (e:any) {
     let Settings: IComSettings = {...this.state.Settings};
     Settings.baudRate = parseInt(e.target.value);
     this.setState({Settings});
-    //this.setState({Settings.baudRate = parseInt(e.target.value)});
   }
 
   tougleParity (e:any) {
     let Settings: IComSettings = {...this.state.Settings};
     Settings.parity = e.target.value;
     this.setState({Settings});
-    //this.setState({parity: e.target.value});
   }
 
   tougleStopBits (e: any) {
     let Settings: IComSettings = {...this.state.Settings};
     Settings.stopBits = parseInt(e.target.value);
     this.setState({Settings});
-    //this.setState({stopBits: parseInt(e.target.value)});
   }
 
   render(){
@@ -102,13 +95,14 @@ export default class FilterSettings extends Component<IComSettingsProps, IComSet
         <div className={'search Settings'}>
           <button
             className="btn btn-secondary btn-xs"
-            onClick = {()=>this.getSerialPortHandler()}>Select COM</button>
+            onClick = {async ()=>{await this.getSerialPort()}}>Select COM</button>
           <BPSSelect default={this.state.Settings.baudRate.toString()} onChange={(e)=>this.tougleBPS(e)}/>
           <ParitySelect default={this.state.Settings.parity} onChange={(e)=>this.tougleParity(e)}/>
           <StopBitsSelect default={this.state.Settings.stopBits.toString()} onChange={(e)=>this.tougleStopBits(e)}/>
         </div>
         <button
-          className={'search Apply'}
+          className = {'search Apply'}
+          disabled = {!this.state.isPortSelected}
           onClick = {async ()=>{await this.onClickApplyComSettingHandler()}}
         >Apply</button>
         <button

@@ -60,6 +60,7 @@ export default class MainPage extends Component<IMainProps, IMainState> {
 
   async closePort () {
     try {
+      clearTimeout(this.AutoSendTimer);
       await this.browserPort!.close();
     } catch (e) {
     }
