@@ -7,6 +7,8 @@ import { BPSSelect } from "../../Components/BPSSelect";
 import { ParitySelect } from "../../Components/ParitySelect";
 import { StopBitsSelect } from "../../Components/StopBitsSelect";
 import { BrowserComPort } from "../../port/BrowserComPort";
+import Modal from "../../Components/HOC/Modal";
+import ComSettings from "../../Forms/ComSettings/ComSettings"
 interface IMainProps{
 }
 
@@ -16,6 +18,7 @@ interface IMainState{
   parity: ParityType;
   stopBits: number;
   answer: string;
+  showModal: boolean;
 }
 
 export default class MainPage extends Component<IMainProps, IMainState> {
@@ -30,7 +33,8 @@ export default class MainPage extends Component<IMainProps, IMainState> {
       baudRate: 115200,
       parity: 'none',
       stopBits: 1,
-      answer:'---'
+      answer:'---',
+      showModal: false
     }
   }
 
@@ -106,9 +110,29 @@ export default class MainPage extends Component<IMainProps, IMainState> {
     this.setState({stopBits: parseInt(e.target.value)});
   }
 
+  openComSettings() {
+    this.setState({showModal: true});
+  }
+
+  /*
+          <FilterSettings
+          onExitHandler = {this.handlerFilterFormClose.bind(this)}
+          Range = {this.state.query.Range || DefaultRange}
+        />
+  */
   render(){
+    const modal = this.state.showModal
+    ? (
+      <Modal classes='content-center'>
+        <ComSettings onExitHandler={undefined} />
+      </Modal>
+    )
+    : null;
+
     return (
       <>
+        <div>
+        <span className="img-16x16" onClick = {()=>this.openComSettings()}>⚙️</span>
         <span>{this.state.Counter}</span>
         <button
           className="btn btn-secondary btn-xs"
@@ -126,6 +150,8 @@ export default class MainPage extends Component<IMainProps, IMainState> {
         <button
           className="btn btn-secondary btn-xs"
           onClick = {()=>this.closePort()}>Close Port</button>
+        </div>
+        {modal}
       </>
     );
   }

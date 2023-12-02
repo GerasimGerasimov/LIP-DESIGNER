@@ -36,3 +36,11 @@
     transform: rotate(360deg);
   }
 }
+
+.img-16x16 {
+  display: inline-block;
+  color: gray;
+  fill: currentColor;
+  height: 24px;
+  width: 24px;
+}
