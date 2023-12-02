@@ -1,48 +1,119 @@
 import React, { Component} from "react"
 import './ComSettings.css'
+import { BPSSelect } from "../../Components/BPSSelect";
+import { ParitySelect } from "../../Components/ParitySelect";
+import { StopBitsSelect } from "../../Components/StopBitsSelect";
+import { BrowserComPort } from "../../port/BrowserComPort";
 
-/*
+
+export interface IComSettings {
+  baudRate: number;
+  parity: ParityType;
+  stopBits: number;
+}
+
 export interface IComSettingsCloseHandler {
-  (result: IComhRangQuery | undefined): any;
-}*/
+  (port: BrowserComPort, ComSettings: IComSettings): any;
+}
 
 export interface IComSettingsProps {
-  onExitHandler:undefined;//IComSettingsCloseHandler;
+  ComSettings: IComSettings;
+  onExitHandler:IComSettingsCloseHandler;
 }
 
-export interface IFilterSettingsState {
-
+export interface IComSettingsState {
+  Settings: IComSettings;
 }
 
-export default class FilterSettings extends Component<IComSettingsProps, IFilterSettingsState> {
+export default class FilterSettings extends Component<IComSettingsProps, IComSettingsState> {
 
-  private refEvent    = React.createRef<HTMLSelectElement>();
+  private browserPort: BrowserComPort | void = undefined;
 
   constructor (props: IComSettingsProps) {
     super(props);
     this.state={
+      Settings: {...props.ComSettings}
     }
   }
  
   componentDidMount(){
-    //this.refEvent.current!.value = "!!!";
   }
 
   private exitHandler() {
-      //this.props.onExitHandler(query);
+    let ComSettings: IComSettings = {... this.state.Settings};
+    this.props.onExitHandler(this.browserPort!, ComSettings);
+  }
+
+  async getSerialPort() {
+    try {
+      let com: SerialPort = await BrowserComPort.selectPort();
+      if (com) this.browserPort = new BrowserComPort(com);
+      console.log(com);
+    } catch (e) {
+      console.log(e);
+      this.browserPort = undefined;
+    }
+  }
+
+  async onClickApplyComSettingHandler() {
+    let opt: SerialOptions = {
+      ...this.state.Settings,
+      dataBits: 8,
+      bufferSize: 256
+    };
+    console.log(opt);
+    try {
+      await this.browserPort!.initialize!(opt);
+    } catch(e) {
+      console.log(e);
+    }
+    this.exitHandler();
+  }
+
+  getSerialPortHandler() {
+    this.getSerialPort();
+  }
+
+  tougleBPS (e:any) {
+    let Settings: IComSettings = {...this.state.Settings};
+    Settings.baudRate = parseInt(e.target.value);
+    this.setState({Settings});
+    //this.setState({Settings.baudRate = parseInt(e.target.value)});
+  }
+
+  tougleParity (e:any) {
+    let Settings: IComSettings = {...this.state.Settings};
+    Settings.parity = e.target.value;
+    this.setState({Settings});
+    //this.setState({parity: e.target.value});
+  }
+
+  tougleStopBits (e: any) {
+    let Settings: IComSettings = {...this.state.Settings};
+    Settings.stopBits = parseInt(e.target.value);
+    this.setState({Settings});
+    //this.setState({stopBits: parseInt(e.target.value)});
   }
 
   render(){
     return (
       <div className='search block grid-container'>
         <h3 className='search Header'>Connection Settings</h3>
+        <div className={'search Settings'}>
+          <button
+            className="btn btn-secondary btn-xs"
+            onClick = {()=>this.getSerialPortHandler()}>Select COM</button>
+          <BPSSelect default={this.state.Settings.baudRate.toString()} onChange={(e)=>this.tougleBPS(e)}/>
+          <ParitySelect default={this.state.Settings.parity} onChange={(e)=>this.tougleParity(e)}/>
+          <StopBitsSelect default={this.state.Settings.stopBits.toString()} onChange={(e)=>this.tougleStopBits(e)}/>
+        </div>
         <button
-          className={'btn btn-primary btn-xs search Search'}
+          className={'search Apply'}
+          onClick = {async ()=>{await this.onClickApplyComSettingHandler()}}
+        >Apply</button>
+        <button
+          className="search Cancel"
           onClick={()=>this.exitHandler()}
-        >Search</button>
-        <button
-          className="btn btn-secondary btn-xs search Cancel"
-          //onClick={()=>this.props.onExitHandler(undefined)}
         >Cancel</button>
       </div>
     )

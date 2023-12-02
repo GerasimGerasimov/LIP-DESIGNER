@@ -9,10 +9,15 @@
   display: grid;
   overflow: hidden;
   grid-template-columns: 1fr 1fr;
-  grid-template-rows: 0.5fr 0.5fr auto auto 0.5fr auto 0.5fr;
+  grid-template-rows: auto auto 0.5fr;
   gap: 2px 2px;
   grid-template-areas:
-    "Header Header";
+    "Header Header"
+    "Settings Settings"
+    "Apply Cancel";
 }
 
-.search.Header { grid-area: Header; }
+.search.Header { grid-area: Header; margin: 0%;}
+.search.Settings { grid-area: Settings;}
+.search.Apply { grid-area: Apply;}
+.search.Cancel { grid-area: Cancel;}
