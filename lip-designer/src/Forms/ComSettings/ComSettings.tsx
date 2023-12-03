@@ -47,9 +47,9 @@ export default class FilterSettings extends Component<IComSettingsProps, IComSet
     try {
       let com: SerialPort = await BrowserComPort.selectPort();
       if (com) this.browserPort = new BrowserComPort(com);
-      console.log(com);
+      console.info(com);
     } catch (e) {
-      console.log(e);
+      console.error(e);
       this.browserPort = undefined;
     }
     this.setState({isPortSelected:(this.browserPort === undefined)? false : true});
