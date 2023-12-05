@@ -6,6 +6,7 @@ import React, { Component } from "react";
 import { BrowserComPort } from "../../port/BrowserComPort";
 import Modal from "../../Components/HOC/Modal";
 import ComSettings, { IComSettings } from "../../Forms/ComSettings/ComSettings"
+import FileUploadForm from "../../Forms/FileUploadForm/FileUploadForm";
 interface IMainProps{
 }
 
@@ -29,6 +30,7 @@ export default class MainPage extends Component<IMainProps, IMainState> {
         baudRate: 115200,
         parity: 'none',
         stopBits: 1,
+        isComReadyToUse: false,
       },
       answer:'---',
       showModal: false
@@ -89,6 +91,7 @@ export default class MainPage extends Component<IMainProps, IMainState> {
       <>
         <div>
         <span className="img-16x16" onClick = {()=>this.openComSettings()}>⚙️</span>
+        <FileUploadForm/>
         <span>{this.state.Counter}</span>
         <button
           className="btn btn-secondary btn-xs"

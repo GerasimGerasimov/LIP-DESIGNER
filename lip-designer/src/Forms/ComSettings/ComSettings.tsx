@@ -10,6 +10,7 @@ export interface IComSettings {
   baudRate: number;
   parity: ParityType;
   stopBits: number;
+  isComReadyToUse: boolean;
 }
 
 export interface IComSettingsCloseHandler {
@@ -64,6 +65,7 @@ export default class FilterSettings extends Component<IComSettingsProps, IComSet
     console.log(opt);
     try {
       await this.browserPort!.initialize!(opt);
+      
     } catch(e) {
       console.log(e);
     }
