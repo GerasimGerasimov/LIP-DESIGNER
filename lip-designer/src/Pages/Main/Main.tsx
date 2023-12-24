@@ -78,6 +78,16 @@ export default class MainPage extends Component<IMainProps, IMainState> {
     this.setState({showModal: false, ComSettings});
   }
 
+  async openFile() {
+    const filename: string = "D:/Project/EFi_Tomsk/FirmWare/OLED_BAREMETALL_V3/App/src/Ajuster/OLED_SETTINGS.ini";
+    const root = await navigator.storage.getDirectory();
+    try {
+     const fileHandle = await root.getFileHandle(filename, { create: false });
+    } catch (e) {
+      console.log(e);
+    }
+  }
+
   render(){
     const modal = this.state.showModal
     ? (
@@ -101,6 +111,9 @@ export default class MainPage extends Component<IMainProps, IMainState> {
           className="btn btn-secondary btn-xs"
           onClick = {async ()=>{await this.closePort()}}>Close Port</button>
         </div>
+        <button
+          className="btn btn-secondary btn-xs"
+          onClick = {async ()=>{await this.openFile()}}>OpenFile</button>
         {modal}
       </>
     );
